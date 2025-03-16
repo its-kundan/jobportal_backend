@@ -31,8 +31,8 @@ Follow these steps to set up the backend locally:
 
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/your-username/job-portal-backend.git
-   cd job-portal-backend
+   git clone https://github.com/its-kundan/jobportal_backend.git
+   cd jobportal_backend
    ```
 
 2. **Install Dependencies:**
@@ -122,6 +122,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 For questions or feedback, reach out to:  
 - **Your Name**  
-- **Email:** your-email@example.com  
-- **GitHub:** [your-username](https://github.com/your-username)
+- **Email:** kundan51kk@gmail.com  
+- **GitHub:** [its-kundan](https://github.com/its-kundan)
 ```
