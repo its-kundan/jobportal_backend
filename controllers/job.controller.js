@@ -8,22 +8,57 @@ export const postJob = async (req, res) => {
 
         if (!title || !description || !requirements || !salary || !location || !jobType || !experience || !position || !companyId) {
             return res.status(400).json({
-                message: "Somethin is missing.",
+                message: "All fields are required.",
                 success: false
             })
         };
+
+        // Validate salary
+        if (isNaN(salary) || Number(salary) <= 0) {
+            return res.status(400).json({
+                message: "Invalid salary amount.",
+                success: false
+            });
+        }
+
+        // Validate experience level
+        if (isNaN(experience) || Number(experience) < 0) {
+            return res.status(400).json({
+                message: "Invalid experience level.",
+                success: false
+            });
+        }
+
+        // Validate position count
+        if (isNaN(position) || Number(position) <= 0) {
+            return res.status(400).json({
+                message: "Invalid position count.",
+                success: false
+            });
+        }
+
+        // Validate job type
+        const validJobTypes = ['full-time', 'part-time', 'contract', 'internship', 'freelance'];
+        if (!validJobTypes.includes(jobType.toLowerCase())) {
+            return res.status(400).json({
+                message: "Invalid job type.",
+                success: false
+            });
+        }
+
         const job = await Job.create({
-            title,
-            description,
-            requirements: requirements.split(","),
+            title: title.trim(),
+            description: description.trim(),
+            requirements: requirements.split(",").map(req => req.trim()).filter(req => req.length > 0),
             salary: Number(salary),
-            location,
-            jobType,
-            experienceLevel: experience,
-            position,
+            location: location.trim(),
+            jobType: jobType.toLowerCase(),
+            experienceLevel: Number(experience),
+            position: Number(position),
             company: companyId,
             created_by: userId
         });
+
         return res.status(201).json({
             message: "New job created successfully.",
             job,
@@ -31,8 +66,13 @@ export const postJob = async (req, res) => {
         });
     } catch (error) {
         console.log(error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
     }
 }
+
 // student k liye
 export const getAllJobs = async (req, res) => {
     try {
@@ -46,57 +86,79 @@ export const getAllJobs = async (req, res) => {
         const jobs = await Job.find(query).populate({
             path: "company"
         }).sort({ createdAt: -1 });
-        if (!jobs) {
-            return res.status(404).json({
-                message: "Jobs not found.",
-                success: false
-            })
-        };
+        
         return res.status(200).json({
             jobs,
             success: true
         })
     } catch (error) {
         console.log(error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
     }
 }
+
 // student
 export const getJobById = async (req, res) => {
     try {
         const jobId = req.params.id;
+        
+        if (!jobId) {
+            return res.status(400).json({
+                message: "Job ID is required",
+                success: false
+            });
+        }
+
         const job = await Job.findById(jobId).populate({
-            path:"applications"
+            path: "company"
+        }).populate({
+            path: "applications",
+            populate: {
+                path: "applicant",
+                select: "fullname email profile"
+            }
         });
+
         if (!job) {
             return res.status(404).json({
-                message: "Jobs not found.",
+                message: "Job not found.",
                 success: false
             })
         };
-        return res.status(200).json({ job, success: true });
+
+        return res.status(200).json({ 
+            job, 
+            success: true 
+        });
     } catch (error) {
         console.log(error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
     }
 }
+
 // admin kitne job create kra hai abhi tk
 export const getAdminJobs = async (req, res) => {
     try {
         const adminId = req.id;
         const jobs = await Job.find({ created_by: adminId }).populate({
-            path:'company',
-            createdAt:-1
-        });
-        if (!jobs) {
-            return res.status(404).json({
-                message: "Jobs not found.",
-                success: false
-            })
-        };
+            path: 'company'
+        }).sort({ createdAt: -1 });
+        
         return res.status(200).json({
             jobs,
             success: true
         })
     } catch (error) {
         console.log(error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
     }
 }
